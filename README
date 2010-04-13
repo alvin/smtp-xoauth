@@ -1,0 +1,54 @@
+*** SMTP XOAUTH for ruby's Net::SMTP ***
+
+Based on http://code.google.com/apis/gmail/oauth/protocol.html
+
+
+Requires a signed input base string passed in for password secret - the oauth gem is helpful in creating this
+
+Leaves the username as a parameter to maintain compatibility with other auth_ methods
+
+#todo - add functions to more easily create this string given the user's email address, token and secret
+#todo - figure out how to make gems and such properly
+
+
+**  USAGE EXAMPLE **
+
+Basically all this library provides is the new :auth => :oauth  argument to Net::SMTP (see example below)
+
+To get something working out with minimal work, use Google's Python commandline script to generate a valid auth_string
+http://code.google.com/p/google-mail-xoauth-tools/wiki/XoauthDotPyRunThrough  and use the Pony mail code below
+to send a message (gem install pony)
+
+
+The auth_string below is what an "initial client request" looks like before Base64 encoding - 
+this is what's passed to the auth_xoauth function as a string.  
+
+<pre>
+
+require 'smtp-xoauth'
+require 'pony'
+
+# to see this working get yourself a valid auth_string using google's xoauth.py utility
+auth_string = 'GET https://mail.google.com/mail/b/youremail@gmail.com/smtp/ oauth_consumer_key="oftenyourdomain.com",oauth_nonce="6762341348542013497",oauth_signature="CqU4ov0ashDqMrWXw6yKWTbbjE%3D",oauth_signature_method="HMAC-SHA1",oauth_timestamp="1270697273",oauth_token="1%2F3cJbEP_tmYo0svadifjadsfWpQgBP6-NVeeBHDUXOek",oauth_version="1.0"'
+
+
+Pony.mail( :from => "youremail@gmail.com", 
+           :to => "destination@anywhere.com", 
+           :body => "no big deal", 
+           :subject => "oauth'ed message", 
+           :content_type => 'text/plain', 
+           :via => :smtp, 
+           :smtp => {
+          	  :host   => 'smtp.gmail.com',
+              :port   => '587',
+              :tls    => true,
+              :user   => 'gmailusername',
+              :password   => auth_string,
+              :auth   => :oauth
+           })
+
+
+</pre>
+
+To rebuild the gem after mucking with the code, just do "rake gem"
+Contact alvin via github if you have any suggestions or contributions.  
